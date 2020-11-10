@@ -5,7 +5,7 @@ const servers = require('../bot').servers;
 
 function play(connection, msg) {
     var server = servers[msg.guild.id];
-    const stream = ytdl(server.queue[0], { filter: 'audioonly' });
+    const stream = ytdl(server.queue[0].url, { filter: 'audioonly' });
     server.dispatcher = connection.play(stream);
 
     server.queue.shift();
@@ -44,7 +44,28 @@ module.exports = async (msg, args, command) => {
                 key: process.env.YT_API_KEY,
                 type: 'video'
             };
-            var result = await search(args.join(' '), opts);
+            try {
+                var result = await search(args.join(' '), opts);
+            }
+            catch (e) {
+                if (e.response.status === 403) {
+                    let embed = new Discord.MessageEmbed()
+                        .setColor("#ff0000")
+                        .setDescription('Plus de musique pour aujourd\'hui 😭')
+                        .setTitle("✖ Erreur ✖");
+                    msg.channel.send(embed);
+                    // msg.channel.send("Plus de musique pour aujourd'hui 😭");
+                }
+                else {
+                    let embed = new Discord.MessageEmbed()
+                        .setColor("#ff0000")
+                        .setDescription('Une erreur est survenue')
+                        .setTitle("✖ Erreur ✖");
+                    msg.channel.send(embed);
+                    // msg.channel.send("Une erreur est survenue")
+                }
+                return; 
+            }
             var resp = '';
             var numberOfChoices = 10;
             for (var i = 0; i < numberOfChoices; i++) {
@@ -63,7 +84,7 @@ module.exports = async (msg, args, command) => {
                 theResult = await result.results[parseInt(m.content) - 1];
 
                 var server = servers[msg.guild.id];
-                server.queue.push(theResult.link);
+                server.queue.push({ url: theResult.link, title: theResult.title });
 
                 let embed = new Discord.MessageEmbed()
                     .setColor("#73ffdc")
@@ -109,6 +130,19 @@ module.exports = async (msg, args, command) => {
             if (msg.guild.voice.connection) {
                 msg.guild.voice.connection.disconnect();
             }
+            break;
+        case 'queue':
+            var server = servers[msg.guild.id];
+            var resp = '';
+            for (i in server.queue) {
+                resp += `${server.queue[i].title}\n`;
+            }
+            let embed = new Discord.MessageEmbed()
+                .setColor("#73ffdc")
+                .setDescription(resp)
+                .setTitle("Music queue");
+            msg.channel.send(embed);
+            // msg.channel.send(resp);
             break;
         default:
     }

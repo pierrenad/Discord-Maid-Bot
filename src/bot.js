@@ -22,6 +22,8 @@ client.on('message', commandHandler);
 client.on('guildMemberAdd', (member) => {
     if (member.user.bot.valueOf()) return;
 
+    const role = Discord.Guild.roles.cache.find(role => role.name === 'Recrue');
+    member.roles.add(role); 
     const embed = new Discord.MessageEmbed()
         .setTitle('Welcome !')
         .setColor(0xff0000)
