@@ -1,3 +1,5 @@
+const Discord = require('discord.js');
+
 const eightBall = [
     'As I see it, yes.',
     'Ask again later.',

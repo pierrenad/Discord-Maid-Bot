@@ -15,4 +15,14 @@ client.once('ready', () => {
 
 client.on('message', commandHandler); 
 
+client.on('guildMemberAdd', (member) => {
+    if(member.user.bot.valueOf()) return; 
+    
+    const embed = new Discord.MessageEmbed()
+    .setTitle('Welcome !')
+      .setColor(0xff0000)
+      .setDescription("Bienvenue à " + member.nickname + "!");
+    member.guild.channels.get(process.env.CHANNEL_GENERAL).send(embed); 
+})
+
 client.login(process.env.BOT_TOKEN);
