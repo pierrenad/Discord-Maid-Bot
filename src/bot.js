@@ -14,7 +14,7 @@ const commandHandler = require('./commands');
 
 client.once('ready', () => {
     console.log('Here I am');
-    client.user.setPresence({ status: "idle", activity: { name: prefix[0] + 'help | v1.0' } });
+    client.user.setPresence({ status: "online", activity: { name: prefix[0] + 'help | v1.0' } });
 });
 
 client.on('message', commandHandler);

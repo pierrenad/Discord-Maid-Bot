@@ -75,7 +75,7 @@ module.exports = async (msg, args, command) => {
                 resp += `**[${parseInt(i) + 1}]** \'${result.results[i].title}\'\n`;
             }
             resp += `**[${numberOfChoices + 1}]** Cancel`;
-            resp += `\nChoisi le numéro (1-${numberOfChoices})`;
+            resp += `\nChoisi le numéro (1-${numberOfChoices+1})`;
 
             msg.channel.send(resp);
 
@@ -85,13 +85,12 @@ module.exports = async (msg, args, command) => {
 
             var theResult;
             collector.once('collect', async function (m) {
-                if (m.content === numberOfChoices + 1) return;
+                console.log(m.content);
+                if (parseInt(m.content) === numberOfChoices + 1) return;
                 theResult = await result.results[parseInt(m.content) - 1];
 
                 var server = servers[msg.guild.id];
-                console.log(server.queue);
                 server.queue.push({ url: theResult.link, title: theResult.title });
-                console.log(server.queue);
 
                 let embed = new Discord.MessageEmbed()
                     .setColor("#73ffdc")
@@ -146,15 +145,19 @@ module.exports = async (msg, args, command) => {
         case 'queue':
             var server = servers[msg.guild.id];
             var resp = '';
-            for (i in server.queue) {
-                resp += `${server.queue[i].title}\n`;
+            if (server.queue.length === 0) {
+                resp += 'No song in the queue';
+            }
+            else {
+                for (i in server.queue) {
+                    resp += `${server.queue[i].title}\n`;
+                }
             }
             let embed = new Discord.MessageEmbed()
                 .setColor("#73ffdc")
                 .setDescription(resp)
                 .setTitle("Music queue");
             msg.channel.send(embed);
-            // msg.channel.send(resp);
             break;
         default:
     }
