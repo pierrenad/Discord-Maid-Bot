@@ -10,11 +10,16 @@ function play(connection, msg) {
 
     server.queue.shift();
 
-    server.dispatcher.on("finish", () => {
-        if (server.queue[0])
+    server.dispatcher.on("finish", async () => {
+        // var startTime = Date.now();
+        // while ((Date.now() - startTime) < 60000) {
+        //     console.log("in while" + server.queue[0]);
+        if (server.queue[0]) {
             play(connection, msg);
-        // else
-        //     connection.disconnect;
+            return;
+        }
+        // }
+        connection.disconnect();
     })
 }
 
@@ -54,23 +59,22 @@ module.exports = async (msg, args, command) => {
                         .setDescription('Plus de musique pour aujourd\'hui 😭')
                         .setTitle("✖ Erreur ✖");
                     msg.channel.send(embed);
-                    // msg.channel.send("Plus de musique pour aujourd'hui 😭");
                 }
                 else {
                     let embed = new Discord.MessageEmbed()
                         .setColor("#ff0000")
-                        .setDescription('Une erreur est survenue')
+                        .setDescription('Une erreur est survenue 🤔')
                         .setTitle("✖ Erreur ✖");
                     msg.channel.send(embed);
-                    // msg.channel.send("Une erreur est survenue")
                 }
-                return; 
+                return;
             }
             var resp = '';
             var numberOfChoices = 10;
             for (var i = 0; i < numberOfChoices; i++) {
                 resp += `**[${parseInt(i) + 1}]** \'${result.results[i].title}\'\n`;
             }
+            resp += `**[${numberOfChoices + 1}]** Cancel`;
             resp += `\nChoisi le numéro (1-${numberOfChoices})`;
 
             msg.channel.send(resp);
@@ -81,10 +85,13 @@ module.exports = async (msg, args, command) => {
 
             var theResult;
             collector.once('collect', async function (m) {
+                if (m.content === numberOfChoices + 1) return;
                 theResult = await result.results[parseInt(m.content) - 1];
 
                 var server = servers[msg.guild.id];
+                console.log(server.queue);
                 server.queue.push({ url: theResult.link, title: theResult.title });
+                console.log(server.queue);
 
                 let embed = new Discord.MessageEmbed()
                     .setColor("#73ffdc")
@@ -93,12 +100,17 @@ module.exports = async (msg, args, command) => {
                 msg.channel.send(embed);
 
                 if (msg.member.voice.channel.members.has(process.env.BOT_ID)) {
-                    if (server.queue.length === 1) {
-                        msg.member.voice.channel.join().then(connection => {
-                            play(connection, msg);
-                        })
-                    }
-                    else return;
+                    return;
+                    // console.log(server.queue.length);
+                    // if (server.queue.length === 1) {
+                    //     connection => {
+                    //         play(connection, msg); 
+                    //     }
+                    //     // msg.member.voice.channel.join().then(connection => {
+                    //     //     play(connection, msg);
+                    //     // })
+                    // }
+                    // else return;
                 }
                 else {
                     msg.member.voice.channel.join().then(connection => {
