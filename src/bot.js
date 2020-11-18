@@ -46,23 +46,27 @@ client.on('guildMemberAdd', async function (member) {
 client.on('messageReactionAdd', async function (reaction, user) {
     if (user.bot) return;
     if (reaction.message.guild.id === '509462489935904794') { // only test server for now 
-        const addRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'Un peu moins');
-        const delRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'newbies');
+        if (reaction.message.channel.id === '778413087475761193') {
+            const addRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'Un peu moins');
+            const delRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'newbies');
+            var member = reaction.message.guild.members.cache.get(user.id);
+            if (!member.roles.cache.has(addRole.id))
+                await member.roles.add(addRole);
+            if (member.roles.cache.has(delRole.id)) {
+                await member.roles.remove(delRole);
+            }
+        }
+        return;
+    }
+    if (reaction.message.channel.id === process.env.CHANNEL_REGLEMENT) {
+        const addRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'Légion');
+        const delRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'Recrue');
         var member = reaction.message.guild.members.cache.get(user.id);
         if (!member.roles.cache.has(addRole.id))
             await member.roles.add(addRole);
         if (member.roles.cache.has(delRole.id)) {
             await member.roles.remove(delRole);
         }
-        return;
-    }
-    const addRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'Légion');
-    const delRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'Recrue');
-    var member = reaction.message.guild.members.cache.get(user.id);
-    if (!member.roles.cache.has(addRole.id))
-        await member.roles.add(addRole);
-    if (member.roles.cache.has(delRole.id)) {
-        await member.roles.remove(delRole);
     }
 });
 client.on('raw', packet => {
