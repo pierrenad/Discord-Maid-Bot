@@ -54,6 +54,15 @@ client.on('messageReactionAdd', async function (reaction, user) {
         if (member.roles.cache.has(delRole.id)) {
             await member.roles.remove(delRole);
         }
+        return;
+    }
+    const addRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'Légion');
+    const delRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'Recrue');
+    var member = reaction.message.guild.members.cache.get(user.id);
+    if (!member.roles.cache.has(addRole.id))
+        await member.roles.add(addRole);
+    if (member.roles.cache.has(delRole.id)) {
+        await member.roles.remove(delRole);
     }
 });
 client.on('raw', packet => {

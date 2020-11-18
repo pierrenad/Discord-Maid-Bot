@@ -15,14 +15,10 @@ function play(connection, msg) {
     server.queue.shift();
 
     server.dispatcher.on("finish", async () => {
-        // var startTime = Date.now();
-        // while ((Date.now() - startTime) < 60000) {
-        //     console.log("in while" + server.queue[0]);
         if (server.queue[0]) {
             play(connection, msg);
             return;
         }
-        // }
         connection.disconnect();
     })
 }
