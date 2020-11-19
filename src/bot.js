@@ -26,9 +26,10 @@ client.on('guildMemberAdd', async function (member) {
         const role = member.guild.roles.cache.find(role => role.name === 'newbies');
         member.roles.add(role);
         const embed = new Discord.MessageEmbed()
-            .setTitle('Welcome !')
+            .setAuthor(member.user.tag, member.user.avatarURL())
             .setColor(0xff0000)
-            .setDescription("Bienvenue à " + member.displayName + "!");
+            .setDescription("A rejoint **" + member.guild.name + "**\nBienvenue **" + member.user.tag + "** !")
+            .setFooter(`Voici notre ${member.guild.memberCount}eme membre`, member.guild.iconURL());
         await member.guild.channels.cache.get('776562644538621963').send(embed);
         return;
     }
@@ -36,9 +37,10 @@ client.on('guildMemberAdd', async function (member) {
     const role = member.guild.roles.cache.find(role => role.name === 'Recrue');
     member.roles.add(role);
     const embed = new Discord.MessageEmbed()
-        .setTitle('Welcome !')
+        .setAuthor(member.user.tag, member.user.avatarURL())
         .setColor(0xff0000)
-        .setDescription("Bienvenue à " + member.displayName + "!");
+        .setDescription("A rejoint **" + member.guild.name + "**\nBienvenue **" + member.user.tag + "** !")
+        .setFooter(`Voici notre ${member.guild.memberCount}eme membre`, member.guild.iconURL());
     await member.guild.channels.cache.get(process.env.CHANNEL_ASSISTANT).send(embed);
 });
 
