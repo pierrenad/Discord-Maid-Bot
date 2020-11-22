@@ -2,10 +2,7 @@ const ytdl = require('ytdl-core');
 const search = require('youtube-search');
 const Discord = require('discord.js');
 const servers = require('../bot').servers;
-// to call a python script
-const express = require('express');
-const { spawn } = require('child_process');
-const { PythonShell } = require('python-shell');
+const getUrlTitle = require("get-url-title");
 
 function play(connection, msg) {
     var server = servers[msg.guild.id];
@@ -26,11 +23,19 @@ function play(connection, msg) {
 module.exports = async (msg, args, command) => {
     if (msg.channel.id !== process.env.CHANNEL_MUSIQUE && msg.channel.id !== '719941433490145412') return;
     if (!msg.member.voice.channel) {
-        await msg.channel.send('Faut être dans un channel vocal mon chou 🙄');
+        let embed = new Discord.MessageEmbed()
+            .setColor("#ff0000")
+            .setDescription('Faut être dans un channel vocal mon chou 🙄')
+            .setTitle('❌ Erreur ❌');
+        await msg.channel.send(embed);
         return;
     }
     if (msg.member.voice.channel.id === process.env.CHANNEL_AFK) {
-        await msg.channel.send('T\'est pas dans un channel vocal approprié 😘');
+        let embed = new Discord.MessageEmbed()
+            .setColor("#ff0000")
+            .setDescription('T\'est pas dans un channel vocal approprié 😘')
+            .setTitle('❌ Erreur ❌');
+        await msg.channel.send(embed);
         return;
     }
 
@@ -51,28 +56,35 @@ module.exports = async (msg, args, command) => {
                 args.join(' ').split('://');
             } catch (e) { isUrl = false; }
             if (isUrl)
-                var siteName = args.join(' ').split('://')[1].split('/')[0];
+                try {
+                    var siteName = args.join(' ').split('://')[1].split('/')[0];
+                } catch (e) { }
             if (siteName === 'www.youtube.com')
                 isYoutube = true;
 
             if (isYoutube) { // if youtube link
                 var server = servers[msg.guild.id];
-                server.queue.push({ url: args.join(' '), title: 'Url' });
+                var urlTitle;
+                async function getTitleAndAddToQueue() {
+                    urlTitle = await getUrlTitle(args.join(' '));
+                    server.queue.push({ url: args.join(' '), title: urlTitle });
 
-                let embed = new Discord.MessageEmbed()
-                    .setColor("#73ffdc")
-                    .setDescription('Url')
-                    .setTitle("Added to the queue");
-                msg.channel.send(embed);
+                    let embed = new Discord.MessageEmbed()
+                        .setColor("#73ffdc")
+                        .setDescription(urlTitle)
+                        .setTitle("Added to the queue");
+                    msg.channel.send(embed);
 
-                if (msg.member.voice.channel.members.has(process.env.BOT_ID)) {
-                    return;
+                    if (msg.member.voice.channel.members.has(process.env.BOT_ID)) {
+                        return;
+                    }
+                    else {
+                        msg.member.voice.channel.join().then(connection => {
+                            play(connection, msg);
+                        })
+                    }
                 }
-                else {
-                    msg.member.voice.channel.join().then(connection => {
-                        play(connection, msg);
-                    })
-                }
+                getTitleAndAddToQueue();
             }
             else { // if not an url
                 var opts = {
@@ -108,7 +120,12 @@ module.exports = async (msg, args, command) => {
                 resp += `**[❌]** Cancel`;
 
                 var theResult;
-                msg.channel.send(resp).then(async function (sent) {
+                let embed = new Discord.MessageEmbed()
+                    .setColor("#73ffdc")
+                    .setDescription(resp)
+                    .setTitle('Musiques proposées')
+                    .setFooter('Fais ton choix en réagissant à ce message');
+                msg.channel.send(embed).then(async function (sent) {
                     await sent.react('1️⃣')
                         .then(() => sent.react('2️⃣'))
                         .then(() => sent.react('3️⃣'))
@@ -212,6 +229,22 @@ module.exports = async (msg, args, command) => {
                 .setDescription(resp)
                 .setTitle("Music queue");
             msg.channel.send(embed);
+            break;
+        case 'clearqueue':
+            var server = servers[msg.guild.id];
+            var resp = [];
+            if (server.queue.length === 0) {
+                resp.push('La queue est déjà vide');
+            }
+            else {
+                server.queue= [];
+                resp.push('La queue a été vidée')
+            }
+            let embedcls = new Discord.MessageEmbed()
+                .setColor("#73ffdc")
+                .setDescription(resp)
+                .setTitle("Music queue");
+            msg.channel.send(embedcls);
             break;
         default:
     }

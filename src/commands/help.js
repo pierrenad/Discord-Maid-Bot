@@ -14,6 +14,7 @@ module.exports = async (msg) => {
             **'+prefix[0]+'resume**\tReprend la musique\n\
             **'+prefix[0]+'leave**\tQuitte le channel vocal\n\
             **'+prefix[0]+'queue**\tPermet de visualiser les titres ajoutés dans la queue\n\
+            **'+prefix[0]+'clearqueue**\tPermet de vider la queue\n\
             **'+prefix[0]+'8ball**\tRépond à votre question\n\
             **'+prefix[0]+'ping**\tSi channel nsfw, répond \'pong\'\n\
             **'+prefix[0]+'test**\tTest the bot response'}

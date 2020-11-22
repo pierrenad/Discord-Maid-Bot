@@ -11,6 +11,7 @@ const pause = require('./music');
 const resume = require('./music');
 const skip = require('./music');
 const queue = require('./music');
+const clearqueue = require('./music');
 
 
 const commands = {
@@ -24,7 +25,8 @@ const commands = {
     resume,
     leave,
     skip,
-    queue
+    queue,
+    clearqueue
 }
 
 module.exports = async (msg) => {
