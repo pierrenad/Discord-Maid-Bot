@@ -47,7 +47,7 @@ client.on('guildMemberAdd', async function (member) {
 // on reaction -> change the role of the member
 client.on('messageReactionAdd', async function (reaction, user) {
     if (user.bot) return;
-    if (reaction.message.guild.id === '509462489935904794') { // only test server for now 
+    if (reaction.message.guild.id === '509462489935904794') { // test server
         if (reaction.message.channel.id === '778413087475761193') {
             const addRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'Un peu moins');
             const delRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'newbies');

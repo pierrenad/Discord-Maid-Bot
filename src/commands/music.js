@@ -99,7 +99,7 @@ module.exports = async (msg, args, command) => {
                     if (e.response.status === 403) {
                         let embed = new Discord.MessageEmbed()
                             .setColor("#ff0000")
-                            .setDescription('Plus de musique pour aujourd\'hui 😭')
+                            .setDescription('Plus de musique pour aujourd\'hui 😭\nMais tu peux toujours donner un lien si tu y tiens vraiment 🙄')
                             .setTitle("❌ Erreur ❌");
                         msg.channel.send(embed);
                     }
