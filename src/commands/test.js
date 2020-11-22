@@ -17,7 +17,6 @@ module.exports = async (msg) => {
         .setTitle("Testing");
     msg.channel.send(embed).then(sent => {
         let id = sent.id;
-        console.log(id);
         sent.react('1️⃣')
             .then(() => sent.react('2️⃣'))
             .then(() => sent.react('3️⃣'))
@@ -31,7 +30,6 @@ module.exports = async (msg) => {
                  * members who have already react doesn't need to be checked.
                  * unless someone unreact, we will have to check everyone except new members that didn't react yet
                  */
-                console.log(reaction._emoji.name === '1️⃣');
                 sent.delete(); 
             }));
     });

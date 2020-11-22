@@ -41,7 +41,8 @@ module.exports = async (msg, args, command) => {
 
     if (!servers[msg.guild.id]) {
         servers[msg.guild.id] = {
-            queue: []
+            queue: [],
+            channels: []
         }
     }
 

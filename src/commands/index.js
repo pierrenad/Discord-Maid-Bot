@@ -12,7 +12,10 @@ const resume = require('./music');
 const skip = require('./music');
 const queue = require('./music');
 const clearqueue = require('./music');
-
+const setChannelReglement = require('./admin');
+const setChannelAssistant = require('./admin');
+const setChannelAfk = require('./admin');
+const setChannelMusique = require('./admin');
 
 const commands = {
     help,
@@ -26,25 +29,19 @@ const commands = {
     leave,
     skip,
     queue,
-    clearqueue
+    clearqueue,
+    setChannelReglement,
+    setChannelAssistant,
+    setChannelAfk,
+    setChannelMusique
 }
 
 module.exports = async (msg) => {
-    if (msg.guild.id === process.env.GUILD_ID) {
-        if (msg.author.bot) return;
-        const args = msg.content.split(' '); // split with spaces 
-        if (args.length == 0 || args[0].charAt(0) !== glob_prefix[0]) return;
-        const command = args.shift().substr(1); // remove first argument from the array and remove '!'
-        if (Object.keys(commands).includes(command)) {
-            commands[command](msg, args, command);
-        }
-    }
-    else if (msg.guild.id === '509462489935904794') { // serveur test 
-        const args = msg.content.split(' '); // split with spaces 
-        if (args.length == 0 || args[0].charAt(0) !== glob_prefix[0]) return;
-        const command = args.shift().substr(1); // remove first argument from the array and remove '!'
-        if (Object.keys(commands).includes(command)) {
-            commands[command](msg, args, command);
-        }
+    if (msg.author.bot) return;
+    const args = msg.content.split(' '); // split with spaces 
+    if (args.length == 0 || args[0].charAt(0) !== glob_prefix[0]) return;
+    const command = args.shift().substr(1); // remove first argument from the array and remove '!'
+    if (Object.keys(commands).includes(command)) {
+        commands[command](msg, args, command);
     }
 }
