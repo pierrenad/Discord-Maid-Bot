@@ -14,7 +14,7 @@ module.exports = async (msg, args, command) => {
         }
     }
 
-    if (!args.length && command !== 'nukeChannel') return;
+    if (!args.length && command !== 'nukeChannel' && command !== 'getChannelsConfig' && command !== 'getRolesConfig') return;
     if (!msg.member.hasPermission('ADMINISTRATOR')) {
         const embed = new Discord.MessageEmbed()
             .setTitle('Admin')
@@ -50,6 +50,17 @@ module.exports = async (msg, args, command) => {
             var channelId = msg.mentions.channels.first().id;
             server.channels.push({ name: 'ai', id: channelId });
             break;
+        case 'getChannelsConfig': // arrival if we want to manage roles
+            const embed = new Discord.MessageEmbed()
+                .setTitle('Liste des channels configurés')
+                .setColor(0xff0000);
+            await server.channels.forEach(async element => {
+                var listChannels = await msg.guild.channels.cache.get(element.id).name;
+                await embed.addField(element.name, listChannels)
+            });
+            if (embed)
+                await msg.channel.send(embed);
+            break;
         case 'setNewMemberRole': // arrival if we want to manage roles
             if (server.roles.roles.some(item => item.name === 'newMember')) {
                 var index = server.roles.roles.findIndex(item => item.name === 'newMember');
@@ -78,6 +89,17 @@ module.exports = async (msg, args, command) => {
                 var index = server.roles.admin.indexOf(roleId);
                 server.roles.admin.splice(index, 1);
             }
+            break;
+        case 'getRolesConfig': // arrival if we want to manage roles
+            const embedRole = new Discord.MessageEmbed()
+                .setTitle('Liste des roles configurés')
+                .setColor(0xff0000);
+            await server.roles.roles.forEach(async element => {
+                var listRole = await msg.guild.roles.cache.get(element.id).name;
+                await embedRole.addField(element.name, listRole)
+            });
+            if (embedRole)
+                await msg.channel.send(embedRole);
             break;
         case 'nukeChannel': // remove an admin role (admin for the bot)
             if (args.length) {

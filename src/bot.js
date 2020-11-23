@@ -54,7 +54,7 @@ client.on('guildCreate', async (guild) => {
 
 // new member get a role and send message to welcome the member
 client.on('guildMemberAdd', async function (member) {
-    if (member.user.bot.valueOf()) return;
+    if (member.user.bot) return;
     if (!servers[member.guild.id]) {
         servers[member.guild.id] = {
             queue: [],
@@ -68,7 +68,7 @@ client.on('guildMemberAdd', async function (member) {
     }
     var server = servers[member.guild.id];
     if (server.roles.roles.find(item => item.name === 'newMember')) { // if new member role is set 
-        const role = member.guild.roles.cache.find(role => role.name === server.roles.roles.find(item => item.name === 'newMember'));
+        const role = member.guild.roles.cache.find(role => role.id === server.roles.roles.find(item => item.name === 'newMember').id);
         member.roles.add(role);
     }
     const embed = new Discord.MessageEmbed()
@@ -80,7 +80,12 @@ client.on('guildMemberAdd', async function (member) {
         await member.guild.channels.cache.find(chan => chan.id === server.channels.find(item => item.name === 'assistant').id).send(embed);
     }
     catch (e) {
-        await member.guild.channels.cache.find(chan => chan.type === 'text').send(embed);
+        try {
+            await member.guild.systemChannel.send(embed);
+        }
+        catch (e) {
+            await member.guild.channels.cache.find(chan => chan.type === 'text').send(embed);
+        }
     }
 });
 
@@ -101,8 +106,8 @@ client.on('messageReactionAdd', async function (reaction, user) {
     var server = servers[reaction.message.guild.id];
     if (server.channels.find(item => item.name === 'rules') && reaction.message.channel.id === server.channels.find(item => item.name === 'rules').id) {
         if (server.roles.roles.find(item => item.name === 'accepted') && server.roles.roles.find(item => item.name === 'newMember')) {
-            const addRole = reaction.message.channel.guild.roles.cache.find(role => role.name === server.roles.roles.find(item => item.name === 'accepted'));
-            const delRole = reaction.message.channel.guild.roles.cache.find(role => role.name === server.roles.roles.find(item => item.name === 'newMember'));
+            const addRole = reaction.message.channel.guild.roles.cache.find(role => role.id === server.roles.roles.find(item => item.name === 'accepted').id);
+            const delRole = reaction.message.channel.guild.roles.cache.find(role => role.id === server.roles.roles.find(item => item.name === 'newMember').id);
             var member = reaction.message.guild.members.cache.get(user.id);
             if (!member.roles.cache.has(delRole.id)) return; // if not a new member
             if (!member.roles.cache.has(addRole.id))

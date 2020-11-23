@@ -20,6 +20,8 @@ const setNewMemberRole = require('./admin');
 const setAcceptedRole = require('./admin');
 const addAdminRole = require('./admin');
 const removeAdminRole = require('./admin');
+const getChannelsConfig = require('./admin');
+const getRolesConfig = require('./admin');
 const nukeChannel = require('./admin');
 
 const commands = {
@@ -43,6 +45,8 @@ const commands = {
     setAcceptedRole,
     addAdminRole,
     removeAdminRole,
+    getChannelsConfig,
+    getRolesConfig,
     nukeChannel
 }
 
