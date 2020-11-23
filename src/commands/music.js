@@ -28,7 +28,8 @@ module.exports = async (msg, args, command) => {
             roles: {
                 roles: [],
                 admin: []
-            }
+            },
+            prefix: ['$']
         }
     }
     const server = servers[msg.guild.id];

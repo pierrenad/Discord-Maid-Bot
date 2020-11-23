@@ -7,7 +7,7 @@ require('dotenv').config(); // get the environment variables into process.env
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const prefix = ['$'];
-exports.prefix = prefix;
+// exports.prefix = prefix;
 const servers = {};
 exports.servers = servers;
 
@@ -22,13 +22,26 @@ client.once('ready', async () => {
 client.on('message', commandHandler);
 
 client.on('guildCreate', async (guild) => {
+    if (!servers[guild.id]) {
+        servers[guild.id] = {
+            queue: [],
+            channels: [],
+            roles: {
+                roles: [],
+                admin: []
+            },
+            prefix: ['$']
+        }
+    }
+    var server = servers[guild.id];
+
     const embed = new Discord.MessageEmbed()
         .setTitle('Merci de m\'avoir ajouté !')
         .setColor(0xff0000)
         .setThumbnail(client.user.avatarURL())
         .addField(
-            'Configuration', `N\'hésitez pas à consulter l\'aide via la commande ${prefix[0]}help.\n\
-            Vous pouvez configurer les channels si vous souhaiter utiliser les options suivantes :\n\
+            'Configuration', `N\'hésitez pas à consulter l\'aide via la commande ${server.prefix[0]}help.\n\
+            Vous pouvez configurer les channels si vous souhaiter utiliser les options se trouvant dans ${server.prefix[0]}helpAdmin :\n\
             Configurez un channel de règlement si vous souhaitez que les nouveaux membres acceptent certains règles pour accéder à un rôle supérieur. \
             Pour cela vous devrez aussi configurer le rôle affecté aux nouveaux et le rôle affecté à ceux qui ont accepté les règles\n\n\
             Channel ai permet de faire des appels au bot (ex: musique, etc)\n\n\
@@ -49,7 +62,8 @@ client.on('guildMemberAdd', async function (member) {
             roles: {
                 roles: [],
                 admin: []
-            }
+            },
+            prefix: ['$']
         }
     }
     var server = servers[member.guild.id];
@@ -80,7 +94,8 @@ client.on('messageReactionAdd', async function (reaction, user) {
             roles: {
                 roles: [],
                 admin: []
-            }
+            },
+            prefix: ['$']
         }
     }
     var server = servers[reaction.message.guild.id];

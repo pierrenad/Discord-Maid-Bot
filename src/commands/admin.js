@@ -9,7 +9,8 @@ module.exports = async (msg, args, command) => {
             roles: {
                 roles: [],
                 admin: []
-            }
+            },
+            prefix: ['$']
         }
     }
 
