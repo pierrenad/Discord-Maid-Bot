@@ -8,66 +8,93 @@ const Discord = require('discord.js');
 const client = new Discord.Client();
 const prefix = ['$'];
 exports.prefix = prefix;
-exports.servers = {};
+const servers = {};
+exports.servers = servers;
 
 const commandHandler = require('./commands');
 
-client.once('ready', () => {
+client.once('ready', async () => {
     console.log('Here I am');
+    // set status
     client.user.setPresence({ status: "online", activity: { name: prefix[0] + 'help | v1.0' } });
 });
 
 client.on('message', commandHandler);
 
+client.on('guildCreate', async (guild) => {
+    const embed = new Discord.MessageEmbed()
+        .setTitle('Merci de m\'avoir ajouté !')
+        .setColor(0xff0000)
+        .setThumbnail(client.user.avatarURL())
+        .addField(
+            'Configuration', `N\'hésitez pas à consulter l\'aide via la commande ${prefix[0]}help.\n\
+            Vous pouvez configurer les channels si vous souhaiter utiliser les options suivantes :\n\
+            Configurez un channel de règlement si vous souhaitez que les nouveaux membres acceptent certains règles pour accéder à un rôle supérieur. \
+            Pour cela vous devrez aussi configurer le rôle affecté aux nouveaux et le rôle affecté à ceux qui ont accepté les règles\n\n\
+            Channel ai permet de faire des appels au bot (ex: musique, etc)\n\n\
+            Channel assisstant est le channel va annoncer des événements (ex: arrivée d'un nouveau membre)\n\n\
+            Tout ceci n'est pas obligatoire, vous pouvez utiliser le bot sans devoir tout configurer.`
+        );
+    await guild.systemChannel.send(embed);
+    // await guild.channels.cache.find(chan => chan.type === 'text').send(embed);
+})
+
 // new member get a role and send message to welcome the member
 client.on('guildMemberAdd', async function (member) {
     if (member.user.bot.valueOf()) return;
-    if (member.guild.id === '509462489935904794') { // test server
-        const role = member.guild.roles.cache.find(role => role.name === 'newbies');
-        member.roles.add(role);
-        const embed = new Discord.MessageEmbed()
-            .setAuthor(member.user.tag, member.user.avatarURL())
-            .setColor(0xff0000)
-            .setDescription("A rejoint **" + member.guild.name + "**\nBienvenue **" + member.user.tag + "** !")
-            .setFooter(`Voici notre ${member.guild.memberCount}eme membre`, member.guild.iconURL());
-        await member.guild.channels.cache.get('776562644538621963').send(embed);
-        return;
+    if (!servers[member.guild.id]) {
+        servers[member.guild.id] = {
+            queue: [],
+            channels: [],
+            roles: {
+                roles: [],
+                admin: []
+            }
+        }
     }
-    // real server (astral)
-    const role = member.guild.roles.cache.find(role => role.name === 'Recrue');
-    member.roles.add(role);
+    var server = servers[member.guild.id];
+    if (server.roles.roles.find(item => item.name === 'newMember')) { // if new member role is set 
+        const role = member.guild.roles.cache.find(role => role.name === server.roles.roles.find(item => item.name === 'newMember'));
+        member.roles.add(role);
+    }
     const embed = new Discord.MessageEmbed()
         .setAuthor(member.user.tag, member.user.avatarURL())
         .setColor(0xff0000)
         .setDescription("A rejoint **" + member.guild.name + "**\nBienvenue **" + member.user.tag + "** !")
         .setFooter(`Voici notre ${member.guild.memberCount}eme membre`, member.guild.iconURL());
-    await member.guild.channels.cache.get(process.env.CHANNEL_ASSISTANT).send(embed);
+    try {
+        await member.guild.channels.cache.find(chan => chan.id === server.channels.find(item => item.name === 'assistant').id).send(embed);
+    }
+    catch (e) {
+        await member.guild.channels.cache.find(chan => chan.type === 'text').send(embed);
+    }
 });
 
 // on reaction -> change the role of the member
 client.on('messageReactionAdd', async function (reaction, user) {
     if (user.bot) return;
-    if (reaction.message.guild.id === '509462489935904794') { // test server
-        if (reaction.message.channel.id === '778413087475761193') {
-            const addRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'Un peu moins');
-            const delRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'newbies');
+    if (!servers[reaction.message.guild.id]) {
+        servers[reaction.message.guild.id] = {
+            queue: [],
+            channels: [],
+            roles: {
+                roles: [],
+                admin: []
+            }
+        }
+    }
+    var server = servers[reaction.message.guild.id];
+    if (server.channels.find(item => item.name === 'rules') && reaction.message.channel.id === server.channels.find(item => item.name === 'rules').id) {
+        if (server.roles.roles.find(item => item.name === 'accepted') && server.roles.roles.find(item => item.name === 'newMember')) {
+            const addRole = reaction.message.channel.guild.roles.cache.find(role => role.name === server.roles.roles.find(item => item.name === 'accepted'));
+            const delRole = reaction.message.channel.guild.roles.cache.find(role => role.name === server.roles.roles.find(item => item.name === 'newMember'));
             var member = reaction.message.guild.members.cache.get(user.id);
+            if (!member.roles.cache.has(delRole.id)) return; // if not a new member
             if (!member.roles.cache.has(addRole.id))
                 await member.roles.add(addRole);
             if (member.roles.cache.has(delRole.id)) {
                 await member.roles.remove(delRole);
             }
-        }
-        return;
-    }
-    if (reaction.message.channel.id === process.env.CHANNEL_REGLEMENT) {
-        const addRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'Légion');
-        const delRole = reaction.message.channel.guild.roles.cache.find(role => role.name === 'Recrue');
-        var member = reaction.message.guild.members.cache.get(user.id);
-        if (!member.roles.cache.has(addRole.id))
-            await member.roles.add(addRole);
-        if (member.roles.cache.has(delRole.id)) {
-            await member.roles.remove(delRole);
         }
     }
 });

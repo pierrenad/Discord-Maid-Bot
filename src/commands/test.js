@@ -16,7 +16,8 @@ module.exports = async (msg) => {
         .setDescription('test')
         .setTitle("Testing");
     msg.channel.send(embed).then(sent => {
-        let id = sent.id;
+        // let id = sent.id;
+        // console.log(id);
         sent.react('1️⃣')
             .then(() => sent.react('2️⃣'))
             .then(() => sent.react('3️⃣'))

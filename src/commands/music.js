@@ -21,7 +21,18 @@ function play(connection, msg) {
 }
 
 module.exports = async (msg, args, command) => {
-    if (msg.channel.id !== process.env.CHANNEL_MUSIQUE && msg.channel.id !== '719941433490145412') return;
+    if (!servers[msg.guild.id]) {
+        servers[msg.guild.id] = {
+            queue: [],
+            channels: [],
+            roles: {
+                roles: [],
+                admin: []
+            }
+        }
+    }
+    const server = servers[msg.guild.id];
+    if (server.channels.find(item => item.name === 'ai') && msg.channel.id !== server.channels.find(item => item.name === 'ai').id) return;
     if (!msg.member.voice.channel) {
         let embed = new Discord.MessageEmbed()
             .setColor("#ff0000")
@@ -30,21 +41,14 @@ module.exports = async (msg, args, command) => {
         await msg.channel.send(embed);
         return;
     }
-    if (msg.member.voice.channel.id === process.env.CHANNEL_AFK) {
-        let embed = new Discord.MessageEmbed()
-            .setColor("#ff0000")
-            .setDescription('T\'est pas dans un channel vocal approprié 😘')
-            .setTitle('❌ Erreur ❌');
-        await msg.channel.send(embed);
-        return;
-    }
-
-    if (!servers[msg.guild.id]) {
-        servers[msg.guild.id] = {
-            queue: [],
-            channels: []
-        }
-    }
+    // if (msg.member.voice.channel.id === process.env.CHANNEL_AFK) {
+    //     let embed = new Discord.MessageEmbed()
+    //         .setColor("#ff0000")
+    //         .setDescription('T\'est pas dans un channel vocal approprié 😘')
+    //         .setTitle('❌ Erreur ❌');
+    //     await msg.channel.send(embed);
+    //     return;
+    // }
 
     switch (command) {
         case 'play':
@@ -64,7 +68,7 @@ module.exports = async (msg, args, command) => {
                 isYoutube = true;
 
             if (isYoutube) { // if youtube link
-                var server = servers[msg.guild.id];
+                // var server = servers[msg.guild.id];
                 var urlTitle;
                 async function getTitleAndAddToQueue() {
                     urlTitle = await getUrlTitle(args.join(' '));
@@ -171,7 +175,7 @@ module.exports = async (msg, args, command) => {
                         msg.channel.send(embed);
                         return;
                     }
-                    var server = servers[msg.guild.id];
+                    // var server = servers[msg.guild.id];
                     server.queue.push({ url: theResult.link, title: theResult.title });
 
                     let embed = new Discord.MessageEmbed()
@@ -192,30 +196,30 @@ module.exports = async (msg, args, command) => {
             }
             break;
         case 'skip':
-            var server = servers[msg.guild.id];
+            // var server = servers[msg.guild.id];
             if (server.dispatcher)
                 server.dispatcher.end(); // will end and go back to play (event) if there is something in the queue
             break;
         case 'pause':
-            var server = servers[msg.guild.id];
+            // var server = servers[msg.guild.id];
             if (server.dispatcher) {
                 server.dispatcher.pause();
             }
             break;
         case 'resume':
-            var server = servers[msg.guild.id];
+            // var server = servers[msg.guild.id];
             if (server.dispatcher) {
                 server.dispatcher.resume();
             }
             break;
         case 'leave':
-            var server = servers[msg.guild.id];
+            // var server = servers[msg.guild.id];
             if (msg.guild.voice.connection) {
                 msg.guild.voice.connection.disconnect();
             }
             break;
         case 'queue':
-            var server = servers[msg.guild.id];
+            // var server = servers[msg.guild.id];
             var resp = [];
             if (server.queue.length === 0) {
                 resp.push('No song in the queue');
@@ -232,7 +236,7 @@ module.exports = async (msg, args, command) => {
             msg.channel.send(embed);
             break;
         case 'clearqueue':
-            var server = servers[msg.guild.id];
+            // var server = servers[msg.guild.id];
             var resp = [];
             if (server.queue.length === 0) {
                 resp.push('La queue est déjà vide');
