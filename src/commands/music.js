@@ -6,13 +6,13 @@ const getUrlTitle = require("get-url-title");
 
 function play(connection, msg) {
     var server = servers[msg.guild.id];
-    const stream = ytdl(server.queue[0].url, { filter: 'audioonly' });
+    const stream = ytdl(server.queue.items[0].url, { filter: 'audioonly' });
     server.dispatcher = connection.play(stream);
 
-    server.queue.shift();
+    server.queue.items.shift();
 
     server.dispatcher.on("finish", async () => {
-        if (server.queue[0]) {
+        if (server.queue.items[0]) {
             play(connection, msg);
             return;
         }
@@ -21,19 +21,8 @@ function play(connection, msg) {
 }
 
 module.exports = async (msg, args, command) => {
-    if (!servers[msg.guild.id]) {
-        servers[msg.guild.id] = {
-            queue: [],
-            channels: [],
-            roles: {
-                roles: [],
-                admin: []
-            },
-            prefix: ['$']
-        }
-    }
     const server = servers[msg.guild.id];
-    if (server.channels.find(item => item.name === 'ai') && msg.channel.id !== server.channels.find(item => item.name === 'ai').id) return;
+    if (server.channels.items.find(item => item.name === 'ai') && msg.channel.id !== server.channels.items.find(item => item.name === 'ai').id) return;
     if (!msg.member.voice.channel) {
         let embed = new Discord.MessageEmbed()
             .setColor("#ff0000")
@@ -73,7 +62,7 @@ module.exports = async (msg, args, command) => {
                 var urlTitle;
                 async function getTitleAndAddToQueue() {
                     urlTitle = await getUrlTitle(args.join(' '));
-                    server.queue.push({ url: args.join(' '), title: urlTitle });
+                    server.queue.items.push({ url: args.join(' '), title: urlTitle });
 
                     let embed = new Discord.MessageEmbed()
                         .setColor("#73ffdc")
@@ -177,7 +166,7 @@ module.exports = async (msg, args, command) => {
                         return;
                     }
                     // var server = servers[msg.guild.id];
-                    server.queue.push({ url: theResult.link, title: theResult.title });
+                    server.queue.items.push({ url: theResult.link, title: theResult.title });
 
                     let embed = new Discord.MessageEmbed()
                         .setColor("#73ffdc")
@@ -222,12 +211,12 @@ module.exports = async (msg, args, command) => {
         case 'queue':
             // var server = servers[msg.guild.id];
             var resp = [];
-            if (server.queue.length === 0) {
+            if (server.queue.items.length === 0) {
                 resp.push('No song in the queue');
             }
             else {
-                for (i in server.queue) {
-                    resp += `${server.queue[i].title}\n`;
+                for (i in server.queue.items) {
+                    resp += `${server.queue.items[i].title}\n`;
                 }
             }
             let embed = new Discord.MessageEmbed()
@@ -239,11 +228,11 @@ module.exports = async (msg, args, command) => {
         case 'clearqueue':
             // var server = servers[msg.guild.id];
             var resp = [];
-            if (server.queue.length === 0) {
+            if (server.queue.items.length === 0) {
                 resp.push('La queue est déjà vide');
             }
             else {
-                server.queue= [];
+                server.queue.items = [];
                 resp.push('La queue a été vidée')
             }
             let embedcls = new Discord.MessageEmbed()

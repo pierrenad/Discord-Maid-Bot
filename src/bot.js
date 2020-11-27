@@ -6,6 +6,13 @@
 require('dotenv').config(); // get the environment variables into process.env
 const Discord = require('discord.js');
 const client = new Discord.Client();
+const { Pool } = require('pg');
+const pool = new Pool({
+    connectionString: process.env.DB_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
+});
 const prefix = ['$'];
 // exports.prefix = prefix;
 const servers = {};
@@ -14,23 +21,63 @@ exports.servers = servers;
 const commandHandler = require('./commands');
 
 client.once('ready', async () => {
+    var tableExists = false;
+    const cli = await pool.connect();
+    var result = await cli.query('select * from pg_tables where schemaname=\'public\';');
+    result.rows.forEach(table => {
+        if (table.tablename === 'servers') {
+            tableExists = true;
+        }
+    });
+    if (!tableExists) {
+        await cli.query('CREATE TABLE servers (id bigint NOT NULL, queue json, channels json, roles json, prefix text);');
+    }
+
+    var guildFound;
+    var server; 
+    client.guilds.cache.forEach(async (guild) => {
+        var server = await cli.query(`SELECT * FROM servers WHERE id=${guild.id};`);
+        if (server.rows.length) {
+            guildFound = server.rows[0];
+            servers[guild.id] = { 
+                queue: guildFound.queue,
+                channels: guildFound.channels,
+                roles: guildFound.roles,
+                prefix: guildFound.prefix
+            }
+            server = servers[guild.id];
+        }
+    })
+    cli.release();
+
     console.log('Here I am');
     // set status
-    client.user.setPresence({ status: "online", activity: { name: prefix[0] + 'help | v1.0' } });
+    client.user.setPresence({ status: "online", activity: { name: server ? server.prefix : prefix[0] + 'help | v1.0' } });
 });
 
 client.on('message', commandHandler);
 
 client.on('guildCreate', async (guild) => {
-    if (!servers[guild.id]) {
-        servers[guild.id] = {
-            queue: [],
-            channels: [],
-            roles: {
-                roles: [],
-                admin: []
-            },
-            prefix: ['$']
+    var guildFound;
+    const cli = await pool.connect();
+    var server = await cli.query(`SELECT * FROM servers WHERE id=${guild.id};`);
+    if (server.rows.length) {
+        guildFound = server.rows[0];
+        servers[guild.id] = { 
+            queue: guildFound.queue,
+            channels: guildFound.channels,
+            roles: guildFound.roles,
+            prefix: guildFound.prefix
+        }
+    }
+    if (!guildFound) {
+        await cli.query(`INSERT INTO servers VALUES (${guild.id}, '{"items": []}', '{"items": []}', '{"items": []}', '$');`); 
+        var infos = await cli.query(`SELECT * FROM servers WHERE id=${guild.id};`);
+        servers[guild.id] = { 
+            queue: infos.rows[0].queue,
+            channels: infos.rows[0].channels,
+            roles: infos.rows[0].roles,
+            prefix: infos.rows[0].prefix
         }
     }
     var server = servers[guild.id];
@@ -40,8 +87,8 @@ client.on('guildCreate', async (guild) => {
         .setColor(0xff0000)
         .setThumbnail(client.user.avatarURL())
         .addField(
-            'Configuration', `N\'hésitez pas à consulter l\'aide via la commande ${server.prefix[0]}help.\n\
-            Vous pouvez configurer les channels si vous souhaiter utiliser les options se trouvant dans ${server.prefix[0]}helpAdmin :\n\
+            'Configuration', `N\'hésitez pas à consulter l\'aide via la commande ${server.prefix}help.\n\
+            Vous pouvez configurer les channels si vous souhaiter utiliser les options se trouvant dans ${server.prefix}helpAdmin :\n\
             Configurez un channel de règlement si vous souhaitez que les nouveaux membres acceptent certains règles pour accéder à un rôle supérieur. \
             Pour cela vous devrez aussi configurer le rôle affecté aux nouveaux et le rôle affecté à ceux qui ont accepté les règles\n\n\
             Channel ai permet de faire des appels au bot (ex: musique, etc)\n\n\
@@ -50,25 +97,14 @@ client.on('guildCreate', async (guild) => {
         );
     await guild.systemChannel.send(embed);
     // await guild.channels.cache.find(chan => chan.type === 'text').send(embed);
-})
+});
 
 // new member get a role and send message to welcome the member
 client.on('guildMemberAdd', async function (member) {
     if (member.user.bot) return;
-    if (!servers[member.guild.id]) {
-        servers[member.guild.id] = {
-            queue: [],
-            channels: [],
-            roles: {
-                roles: [],
-                admin: []
-            },
-            prefix: ['$']
-        }
-    }
     var server = servers[member.guild.id];
-    if (server.roles.roles.find(item => item.name === 'newMember')) { // if new member role is set 
-        const role = member.guild.roles.cache.find(role => role.id === server.roles.roles.find(item => item.name === 'newMember').id);
+    if (server.roles.items.find(item => item.name === 'newMember')) { // if new member role is set 
+        const role = member.guild.roles.cache.find(role => role.id === server.roles.items.find(item => item.name === 'newMember').id);
         member.roles.add(role);
     }
     const embed = new Discord.MessageEmbed()
@@ -77,7 +113,7 @@ client.on('guildMemberAdd', async function (member) {
         .setDescription("A rejoint **" + member.guild.name + "**\nBienvenue **" + member.user.tag + "** !")
         .setFooter(`Voici notre ${member.guild.memberCount}eme membre`, member.guild.iconURL());
     try {
-        await member.guild.channels.cache.find(chan => chan.id === server.channels.find(item => item.name === 'assistant').id).send(embed);
+        await member.guild.channels.cache.find(chan => chan.id === server.channels.items.find(item => item.name === 'assistant').id).send(embed);
     }
     catch (e) {
         try {
@@ -92,22 +128,11 @@ client.on('guildMemberAdd', async function (member) {
 // on reaction -> change the role of the member
 client.on('messageReactionAdd', async function (reaction, user) {
     if (user.bot) return;
-    if (!servers[reaction.message.guild.id]) {
-        servers[reaction.message.guild.id] = {
-            queue: [],
-            channels: [],
-            roles: {
-                roles: [],
-                admin: []
-            },
-            prefix: ['$']
-        }
-    }
     var server = servers[reaction.message.guild.id];
-    if (server.channels.find(item => item.name === 'rules') && reaction.message.channel.id === server.channels.find(item => item.name === 'rules').id) {
-        if (server.roles.roles.find(item => item.name === 'accepted') && server.roles.roles.find(item => item.name === 'newMember')) {
-            const addRole = reaction.message.channel.guild.roles.cache.find(role => role.id === server.roles.roles.find(item => item.name === 'accepted').id);
-            const delRole = reaction.message.channel.guild.roles.cache.find(role => role.id === server.roles.roles.find(item => item.name === 'newMember').id);
+    if (server.channels.items.find(item => item.name === 'rules') && reaction.message.channel.id === server.channels.items.find(item => item.name === 'rules').id) {
+        if (server.roles.items.find(item => item.name === 'accepted') && server.roles.items.find(item => item.name === 'newMember')) {
+            const addRole = reaction.message.channel.guild.roles.cache.find(role => role.id === server.roles.items.find(item => item.name === 'accepted').id);
+            const delRole = reaction.message.channel.guild.roles.cache.find(role => role.id === server.roles.items.find(item => item.name === 'newMember').id);
             var member = reaction.message.guild.members.cache.get(user.id);
             if (!member.roles.cache.has(delRole.id)) return; // if not a new member
             if (!member.roles.cache.has(addRole.id))

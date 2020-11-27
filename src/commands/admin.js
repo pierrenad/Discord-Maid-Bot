@@ -1,19 +1,14 @@
 const Discord = require('discord.js');
 const servers = require('../bot').servers;
+const { Pool } = require('pg');
+const pool = new Pool({
+    connectionString: process.env.DB_URL,
+    ssl: {
+        rejectUnauthorized: false
+    }
+});
 
 module.exports = async (msg, args, command) => {
-    if (!servers[msg.guild.id]) {
-        servers[msg.guild.id] = {
-            queue: [],
-            channels: [],
-            roles: {
-                roles: [],
-                admin: []
-            },
-            prefix: ['$']
-        }
-    }
-
     if (!args.length && command !== 'nukeChannel' && command !== 'getChannelsConfig' && command !== 'getRolesConfig') return;
     if (!msg.member.hasPermission('ADMINISTRATOR')) {
         const embed = new Discord.MessageEmbed()
@@ -27,34 +22,52 @@ module.exports = async (msg, args, command) => {
 
     switch (command) {
         case 'setChannelReglement': // arrival if we want to manage roles
-            if (server.channels.some(item => item.name === 'rules')) {
-                var index = server.channels.findIndex(item => item.name === 'rules');
-                server.channels.splice(index, 1);
+            const cliRule = await pool.connect();
+            var GetDbChannels = await cliRule.query(`SELECT channels FROM servers WHERE id=${msg.guild.id};`);
+            dbChannels = GetDbChannels.rows[0].channels;
+            if (dbChannels.items.some(item => item.name === 'rules')) {
+                var index = dbChannels.items.findIndex(item => item.name === 'rules');
+                dbChannels.items.splice(index, 1);
             }
             var channelId = msg.mentions.channels.first().id;
-            server.channels.push({ name: 'rules', id: channelId });
+            dbChannels.items.push({ name: 'rules', id: channelId });
+            await cliRule.query(`UPDATE servers SET channels='${JSON.stringify(dbChannels)}' WHERE id=${msg.guild.id};`);
+            servers[msg.guild.id].channels = dbChannels;
+            cliRule.release();
             break;
         case 'setChannelAssistant': // notifications when something happens
-            if (server.channels.some(item => item.name === 'assistant')) {
-                var index = server.channels.findIndex(item => item.name === 'assistant');
-                server.channels.splice(index, 1);
+            const cliAssist = await pool.connect();
+            var GetDbChannels = await cliAssist.query(`SELECT channels FROM servers WHERE id=${msg.guild.id};`);
+            dbChannels = GetDbChannels.rows[0].channels;
+            if (dbChannels.items.some(item => item.name === 'assistant')) {
+                var index = dbChannels.items.findIndex(item => item.name === 'assistant');
+                dbChannels.items.splice(index, 1);
             }
             var channelId = msg.mentions.channels.first().id;
-            server.channels.push({ name: 'assistant', id: channelId });
+            dbChannels.items.push({ name: 'assistant', id: channelId });
+            await cliAssist.query(`UPDATE servers SET channels='${JSON.stringify(dbChannels)}' WHERE id=${msg.guild.id};`);
+            servers[msg.guild.id].channels = dbChannels;
+            cliAssist.release();
             break;
         case 'setChannelAi': // channel for musique / other stuff with bot
-            if (server.channels.some(item => item.name === 'ai')) {
-                var index = server.channels.findIndex(item => item.name === 'ai');
-                server.channels.splice(index, 1);
+            const cliAi = await pool.connect();
+            var GetDbChannels = await cliAi.query(`SELECT channels FROM servers WHERE id=${msg.guild.id};`);
+            dbChannels = GetDbChannels.rows[0].channels;
+            if (dbChannels.items.some(item => item.name === 'ai')) {
+                var index = dbChannels.items.findIndex(item => item.name === 'ai');
+                dbChannels.items.splice(index, 1);
             }
             var channelId = msg.mentions.channels.first().id;
-            server.channels.push({ name: 'ai', id: channelId });
+            dbChannels.items.push({ name: 'ai', id: channelId });
+            await cliAi.query(`UPDATE servers SET channels='${JSON.stringify(dbChannels)}' WHERE id=${msg.guild.id};`);
+            servers[msg.guild.id].channels = dbChannels;
+            cliAi.release();
             break;
         case 'getChannelsConfig': // arrival if we want to manage roles
             const embed = new Discord.MessageEmbed()
                 .setTitle('Liste des channels configurés')
                 .setColor(0xff0000);
-            await server.channels.forEach(async element => {
+            await server.channels.items.forEach(async element => {
                 var listChannels = await msg.guild.channels.cache.get(element.id).name;
                 await embed.addField(element.name, listChannels)
             });
@@ -62,39 +75,51 @@ module.exports = async (msg, args, command) => {
                 await msg.channel.send(embed);
             break;
         case 'setNewMemberRole': // arrival if we want to manage roles
-            if (server.roles.roles.some(item => item.name === 'newMember')) {
-                var index = server.roles.roles.findIndex(item => item.name === 'newMember');
-                server.roles.roles.splice(index, 1);
+            const cliNewM = await pool.connect();
+            var GetDbRoles = await cliNewM.query(`SELECT roles FROM servers WHERE id=${msg.guild.id};`);
+            dbRoles = GetDbRoles.rows[0].roles;
+            if (dbRoles.items.some(item => item.name === 'newMember')) {
+                var index = dbRoles.items.findIndex(item => item.name === 'newMember');
+                dbRoles.items.splice(index, 1);
             }
             var roleId = msg.mentions.roles.first().id;
-            server.roles.roles.push({ name: 'newMember', id: roleId });
+            dbRoles.items.push({ name: 'newMember', id: roleId });
+            await cliNewM.query(`UPDATE servers SET roles='${JSON.stringify(dbRoles)}' WHERE id=${msg.guild.id};`);
+            servers[msg.guild.id].roles = dbRoles;
+            cliNewM.release();
             break;
         case 'setAcceptedRole': // role after member accept rules
-            if (server.roles.roles.some(item => item.name === 'accepted')) {
-                var index = server.roles.roles.findIndex(item => item.name === 'accepted');
-                server.roles.roles.splice(index, 1);
+            const cliAcceptM = await pool.connect();
+            var GetDbRoles = await cliAcceptM.query(`SELECT roles FROM servers WHERE id=${msg.guild.id};`);
+            dbRoles = GetDbRoles.rows[0].roles;
+            if (dbRoles.items.some(item => item.name === 'accepted')) {
+                var index = dbRoles.items.findIndex(item => item.name === 'accepted');
+                dbRoles.items.splice(index, 1);
             }
             var roleId = msg.mentions.roles.first().id;
-            server.roles.roles.push({ name: 'accepted', id: roleId });
+            dbRoles.items.push({ name: 'accepted', id: roleId });
+            await cliAcceptM.query(`UPDATE servers SET roles='${JSON.stringify(dbRoles)}' WHERE id=${msg.guild.id};`);
+            servers[msg.guild.id].roles = dbRoles;
+            cliAcceptM.release();
             break;
-        case 'addAdminRole': // add a role as admin for the bot
-            var roleId = msg.mentions.roles.first().id;
-            if (!server.roles.admin.includes(roleId)) {
-                server.roles.admin.push(roleId);
-            }
-            break;
-        case 'removeAdminRole': // remove an admin role (admin for the bot)
-            var roleId = msg.mentions.roles.first().id;
-            if (server.roles.admin.includes(roleId)) {
-                var index = server.roles.admin.indexOf(roleId);
-                server.roles.admin.splice(index, 1);
-            }
-            break;
+        // case 'addAdminRole': // add a role as admin for the bot
+        //     var roleId = msg.mentions.roles.first().id;
+        //     if (!server.roles.admin.includes(roleId)) {
+        //         server.roles.admin.push(roleId);
+        //     }
+        //     break;
+        // case 'removeAdminRole': // remove an admin role (admin for the bot)
+        //     var roleId = msg.mentions.roles.first().id;
+        //     if (server.roles.admin.includes(roleId)) {
+        //         var index = server.roles.admin.indexOf(roleId);
+        //         server.roles.admin.splice(index, 1);
+        //     }
+        //     break;
         case 'getRolesConfig': // arrival if we want to manage roles
             const embedRole = new Discord.MessageEmbed()
                 .setTitle('Liste des roles configurés')
                 .setColor(0xff0000);
-            await server.roles.roles.forEach(async element => {
+            await server.roles.items.forEach(async element => {
                 var listRole = await msg.guild.roles.cache.get(element.id).name;
                 await embedRole.addField(element.name, listRole)
             });
@@ -133,11 +158,11 @@ module.exports = async (msg, args, command) => {
             console.log('channel nuked');
 
             // once channel is nuked, change the channels variable if it was one of them 
-            if (server.channels.some(item => item.id === newChannel.id)) {
-                var chan = server.channels.find(item => item.id === newChannel.id);
-                var index = server.channels.findIndex(item => item.id === newChannel.id);
-                server.channels.splice(index, 1);
-                server.channels.push(({ name: chan.name, id: channelCreated.id }))
+            if (server.channels.items.some(item => item.id === newChannel.id)) {
+                var chan = server.channels.items.find(item => item.id === newChannel.id);
+                var index = server.channels.items.findIndex(item => item.id === newChannel.id);
+                server.channels.items.splice(index, 1);
+                server.channels.items.push(({ name: chan.name, id: channelCreated.id }));
             }
             break;
         default:
