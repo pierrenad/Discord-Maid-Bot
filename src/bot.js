@@ -36,11 +36,11 @@ client.once('ready', async () => {
     var guildFound;
     var server; 
     client.guilds.cache.forEach(async (guild) => {
-        var server = await cli.query(`SELECT * FROM servers WHERE id=${guild.id};`);
-        if (server.rows.length) {
-            guildFound = server.rows[0];
+        var dbServer = await cli.query(`SELECT * FROM servers WHERE id=${guild.id};`);
+        if (dbServer.rows.length) {
+            guildFound = dbServer.rows[0];
             servers[guild.id] = { 
-                queue: guildFound.queue,
+                queue: [],
                 channels: guildFound.channels,
                 roles: guildFound.roles,
                 prefix: guildFound.prefix
@@ -60,11 +60,11 @@ client.on('message', commandHandler);
 client.on('guildCreate', async (guild) => {
     var guildFound;
     const cli = await pool.connect();
-    var server = await cli.query(`SELECT * FROM servers WHERE id=${guild.id};`);
-    if (server.rows.length) {
-        guildFound = server.rows[0];
+    var dbServer = await cli.query(`SELECT * FROM servers WHERE id=${guild.id};`);
+    if (dbServer.rows.length) {
+        guildFound = dbServer.rows[0];
         servers[guild.id] = { 
-            queue: guildFound.queue,
+            queue: [],
             channels: guildFound.channels,
             roles: guildFound.roles,
             prefix: guildFound.prefix
@@ -74,7 +74,7 @@ client.on('guildCreate', async (guild) => {
         await cli.query(`INSERT INTO servers VALUES (${guild.id}, '{"items": []}', '{"items": []}', '{"items": []}', '$');`); 
         var infos = await cli.query(`SELECT * FROM servers WHERE id=${guild.id};`);
         servers[guild.id] = { 
-            queue: infos.rows[0].queue,
+            queue: [],
             channels: infos.rows[0].channels,
             roles: infos.rows[0].roles,
             prefix: infos.rows[0].prefix

@@ -4,15 +4,18 @@ const Discord = require('discord.js');
 const servers = require('../bot').servers;
 const getUrlTitle = require("get-url-title");
 
-function play(connection, msg) {
+var nowPlaying = ''; 
+async function play(connection, msg) {
     var server = servers[msg.guild.id];
-    const stream = ytdl(server.queue.items[0].url, { filter: 'audioonly' });
-    server.dispatcher = connection.play(stream);
+    const stream = ytdl(server.queue[0].url, { filter: 'audioonly' });
+    server.dispatcher = await connection.play(stream);
 
-    server.queue.items.shift();
+    nowPlaying = server.queue[0].title; 
+    server.queue.shift();
+    console.log(server.queue);
 
     server.dispatcher.on("finish", async () => {
-        if (server.queue.items[0]) {
+        if (server.queue[0]) {
             play(connection, msg);
             return;
         }
@@ -62,7 +65,7 @@ module.exports = async (msg, args, command) => {
                 var urlTitle;
                 async function getTitleAndAddToQueue() {
                     urlTitle = await getUrlTitle(args.join(' '));
-                    server.queue.items.push({ url: args.join(' '), title: urlTitle });
+                    server.queue.push({ url: args.join(' '), title: urlTitle });
 
                     let embed = new Discord.MessageEmbed()
                         .setColor("#73ffdc")
@@ -166,7 +169,7 @@ module.exports = async (msg, args, command) => {
                         return;
                     }
                     // var server = servers[msg.guild.id];
-                    server.queue.items.push({ url: theResult.link, title: theResult.title });
+                    server.queue.push({ url: theResult.link, title: theResult.title });
 
                     let embed = new Discord.MessageEmbed()
                         .setColor("#73ffdc")
@@ -211,28 +214,30 @@ module.exports = async (msg, args, command) => {
         case 'queue':
             // var server = servers[msg.guild.id];
             var resp = [];
-            if (server.queue.items.length === 0) {
+            if (server.queue.length === 0) {
                 resp.push('No song in the queue');
             }
             else {
-                for (i in server.queue.items) {
-                    resp += `${server.queue.items[i].title}\n`;
+                for (i in server.queue) {
+                    resp += `${server.queue[i].title}\n`;
                 }
             }
             let embed = new Discord.MessageEmbed()
                 .setColor("#73ffdc")
-                .setDescription(resp)
-                .setTitle("Music queue");
+                .addField('Now playing', nowPlaying)
+                .addField('Music queue', resp)
+                // .setDescription(resp)
+                // .setTitle("Music queue");
             msg.channel.send(embed);
             break;
         case 'clearqueue':
             // var server = servers[msg.guild.id];
             var resp = [];
-            if (server.queue.items.length === 0) {
+            if (server.queue.length === 0) {
                 resp.push('La queue est déjà vide');
             }
             else {
-                server.queue.items = [];
+                server.queue = [];
                 resp.push('La queue a été vidée')
             }
             let embedcls = new Discord.MessageEmbed()

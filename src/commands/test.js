@@ -1,6 +1,10 @@
 const Discord = require('discord.js');
+const getUrlTitle = require("get-url-title");
+const ytdl = require('ytdl-core');
+const servers = require('../bot').servers;
 
-module.exports = async (msg) => {
+module.exports = async (msg, args, command) => {
+    var server = servers[msg.guild.id]; 
     await msg.channel.send('Ca fonctionne 😊');
 
     // add a text channel under category
@@ -10,28 +14,39 @@ module.exports = async (msg) => {
     //     channel.setParent(category.id);
     // }).catch(console.error);
 
-    // // reaction to a message
+    // function play(connection, msg) {
+    //     var server = servers[msg.guild.id];
+    //     console.log(server.queue);
+    //     const stream = ytdl(server.queue[0].url, { filter: 'audioonly' });
+    //     server.dispatcher = connection.play(stream);
+
+    //     server.queue.shift();
+    //     console.log(server.queue);
+
+    //     server.dispatcher.on("finish", async () => {
+    //         if (server.queue[0]) {
+    //             play(connection, msg);
+    //             return;
+    //         }
+    //         connection.disconnect();
+    //     })
+    // }
+    // var urlTitle = await getUrlTitle(args.join(' '));
+    // console.log(server.queue);
+    // server.queue.push({ url: args.join(' '), title: urlTitle });
+
     // let embed = new Discord.MessageEmbed()
     //     .setColor("#73ffdc")
-    //     .setDescription('test')
-    //     .setTitle("Testing");
-    // msg.channel.send(embed).then(sent => {
-    //     // let id = sent.id;
-    //     // console.log(id);
-    //     sent.react('1️⃣')
-    //         .then(() => sent.react('2️⃣'))
-    //         .then(() => sent.react('3️⃣'))
-    //         .then(() => sent.react('4️⃣'))
-    //         .then(() => sent.react('5️⃣'))
-    //         .then(() => sent.react('❌'))
-    //         .then(() => sent.awaitReactions((reaction) => {
-    //             // console.log(reaction.users.cache.find(user => user.username === 'Z_Nyster2')); 
-    //             /**
-    //              * need to check if new members have react.
-    //              * members who have already react doesn't need to be checked.
-    //              * unless someone unreact, we will have to check everyone except new members that didn't react yet
-    //              */
-    //             sent.delete(); 
-    //         }));
-    // });
+    //     .setDescription(urlTitle)
+    //     .setTitle("Added to the queue");
+    // msg.channel.send(embed);
+
+    // if (msg.member.voice.channel.members.has(process.env.BOT_ID)) {
+    //     return;
+    // }
+    // else {
+    //     msg.member.voice.channel.join().then(connection => {
+    //         play(connection, msg);
+    //     })
+    // }
 }
