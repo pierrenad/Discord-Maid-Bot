@@ -4,21 +4,67 @@ const Discord = require('discord.js');
 const servers = require('../bot').servers;
 const getUrlTitle = require("get-url-title");
 
-var nowPlaying = ''; 
+var nowPlaying = '';
+var lastSent = null;
+var paused = false;
 async function play(connection, msg) {
     var server = servers[msg.guild.id];
     const stream = ytdl(server.queue[0].url, { filter: 'audioonly' });
-    server.dispatcher = await connection.play(stream);
+    server.dispatcher = connection.play(stream);
 
-    nowPlaying = server.queue[0].title; 
+    // create new 'now playing' message
+    nowPlaying = server.queue[0].title;
+    let embed = new Discord.MessageEmbed()
+        .setColor("#73ffdc")
+        .setDescription(nowPlaying)
+        .setTitle("Now playing");
+    await msg.channel.send(embed).then(sent => {
+        sent.react('⏯')
+        sent.react('⏭')
+        sent.react('⏹')
+
+        sent.awaitReactions((reaction, user) => {
+            if (!reaction.me) {
+                switch (reaction.emoji.name) {
+                    case '⏯':
+                        if (server.dispatcher) {
+                            if (paused)
+                                server.dispatcher.resume();
+                            else if (!paused)
+                                server.dispatcher.pause();
+                            paused = !paused;
+                            reaction.users.remove(user.id);
+                        }
+                        break;
+                    case '⏭':
+                        if (server.dispatcher) {
+                            server.dispatcher.end();
+                            reaction.message.delete();
+                        }
+                        break;
+                    case '⏹':
+                        if (msg.guild.voice.connection) {
+                            msg.guild.voice.connection.disconnect();
+                        }
+                        reaction.message.delete();
+                        break;
+                    default:
+                }
+            }
+        });
+        lastSent = sent;
+    });
     server.queue.shift();
-    console.log(server.queue);
 
     server.dispatcher.on("finish", async () => {
         if (server.queue[0]) {
             play(connection, msg);
             return;
         }
+        if (lastSent) {
+            msg.channel.messages.cache.find(message => message.id === lastSent.id).delete();
+        }
+        lastSent = null;
         connection.disconnect();
     })
 }
@@ -34,14 +80,6 @@ module.exports = async (msg, args, command) => {
         await msg.channel.send(embed);
         return;
     }
-    // if (msg.member.voice.channel.id === process.env.CHANNEL_AFK) {
-    //     let embed = new Discord.MessageEmbed()
-    //         .setColor("#ff0000")
-    //         .setDescription('T\'est pas dans un channel vocal approprié 😘')
-    //         .setTitle('❌ Erreur ❌');
-    //     await msg.channel.send(embed);
-    //     return;
-    // }
 
     switch (command) {
         case 'play':
@@ -210,6 +248,9 @@ module.exports = async (msg, args, command) => {
             if (msg.guild.voice.connection) {
                 msg.guild.voice.connection.disconnect();
             }
+            if (lastSent) {
+                msg.channel.messages.cache.find(message => message.id === lastSent.id).delete();
+            }
             break;
         case 'queue':
             // var server = servers[msg.guild.id];
@@ -226,8 +267,8 @@ module.exports = async (msg, args, command) => {
                 .setColor("#73ffdc")
                 .addField('Now playing', nowPlaying)
                 .addField('Music queue', resp)
-                // .setDescription(resp)
-                // .setTitle("Music queue");
+            // .setDescription(resp)
+            // .setTitle("Music queue");
             msg.channel.send(embed);
             break;
         case 'clearqueue':
