@@ -34,6 +34,7 @@ module.exports = async (msg, args, command) => {
             await cliRule.query(`UPDATE servers SET channels='${JSON.stringify(dbChannels)}' WHERE id=${msg.guild.id};`);
             servers[msg.guild.id].channels = dbChannels;
             cliRule.release();
+            msg.react('👌');
             break;
         case 'setChannelAssistant': // notifications when something happens
             const cliAssist = await pool.connect();
@@ -48,6 +49,7 @@ module.exports = async (msg, args, command) => {
             await cliAssist.query(`UPDATE servers SET channels='${JSON.stringify(dbChannels)}' WHERE id=${msg.guild.id};`);
             servers[msg.guild.id].channels = dbChannels;
             cliAssist.release();
+            msg.react('👌');
             break;
         case 'setChannelAi': // channel for musique / other stuff with bot
             const cliAi = await pool.connect();
@@ -62,6 +64,7 @@ module.exports = async (msg, args, command) => {
             await cliAi.query(`UPDATE servers SET channels='${JSON.stringify(dbChannels)}' WHERE id=${msg.guild.id};`);
             servers[msg.guild.id].channels = dbChannels;
             cliAi.release();
+            msg.react('👌');
             break;
         case 'getChannelsConfig': // arrival if we want to manage roles
             const embed = new Discord.MessageEmbed()
@@ -87,6 +90,7 @@ module.exports = async (msg, args, command) => {
             await cliNewM.query(`UPDATE servers SET roles='${JSON.stringify(dbRoles)}' WHERE id=${msg.guild.id};`);
             servers[msg.guild.id].roles = dbRoles;
             cliNewM.release();
+            msg.react('👌');
             break;
         case 'setAcceptedRole': // role after member accept rules
             const cliAcceptM = await pool.connect();
@@ -101,6 +105,7 @@ module.exports = async (msg, args, command) => {
             await cliAcceptM.query(`UPDATE servers SET roles='${JSON.stringify(dbRoles)}' WHERE id=${msg.guild.id};`);
             servers[msg.guild.id].roles = dbRoles;
             cliAcceptM.release();
+            msg.react('👌');
             break;
         // case 'addAdminRole': // add a role as admin for the bot
         //     var roleId = msg.mentions.roles.first().id;
