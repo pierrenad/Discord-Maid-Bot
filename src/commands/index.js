@@ -55,6 +55,7 @@ module.exports = async (msg) => {
     if (msg.author.bot) return;
     const args = msg.content.split(' '); // split with spaces 
     if (args.length == 0 || args[0].charAt(0) !== server.prefix) return;
+    // if (args.length == 0 || args[0].charAt(0) !== server.prefix && args[0].charAt(0) !== '/') return; // for the tests
     const command = args.shift().substr(1); // remove first argument from the array and remove '!'
     if (Object.keys(commands).includes(command)) {
         commands[command](msg, args, command);

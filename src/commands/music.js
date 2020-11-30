@@ -25,44 +25,47 @@ async function play(connection, msg) {
 
         sent.awaitReactions((reaction, user) => {
             if (!reaction.me) {
-                switch (reaction.emoji.name) {
-                    case '⏯':
-                        if (server.dispatcher) {
-                            if (paused)
-                                server.dispatcher.resume();
-                            else if (!paused)
-                                server.dispatcher.pause();
-                            paused = !paused;
-                            reaction.users.remove(user.id);
-                        }
-                        break;
-                    case '⏭':
-                        if (server.dispatcher) {
-                            server.dispatcher.end();
+                if (reaction.message.channel.guild.members.cache.find(member => member.id === user.id).voice.channel) {
+                    switch (reaction.emoji.name) {
+                        case '⏯':
+                            if (server.dispatcher) {
+                                if (paused)
+                                    server.dispatcher.resume();
+                                else if (!paused)
+                                    server.dispatcher.pause();
+                                paused = !paused;
+                                reaction.users.remove(user.id);
+                            }
+                            break;
+                        case '⏭':
+                            if (server.dispatcher) {
+                                server.dispatcher.end();
+                            }
+                            break;
+                        case '⏹':
+                            if (msg.guild.voice.connection) {
+                                msg.guild.voice.connection.disconnect();
+                            }
                             reaction.message.delete();
-                        }
-                        break;
-                    case '⏹':
-                        if (msg.guild.voice.connection) {
-                            msg.guild.voice.connection.disconnect();
-                        }
-                        reaction.message.delete();
-                        break;
-                    default:
+                            break;
+                        default:
+                    }
                 }
+                reaction.users.remove(user.id);
             }
         });
         lastSent = sent;
     });
     server.queue.shift();
 
-    server.dispatcher.on("finish", async () => {
+    server.dispatcher.on("finish", () => {
+        if (lastSent) {
+            if (msg.channel.messages.cache.find(message => message.id === lastSent.id))
+                msg.channel.messages.cache.find(message => message.id === lastSent.id).delete();
+        }
         if (server.queue[0]) {
             play(connection, msg);
             return;
-        }
-        if (lastSent) {
-            msg.channel.messages.cache.find(message => message.id === lastSent.id).delete();
         }
         lastSent = null;
         connection.disconnect();
