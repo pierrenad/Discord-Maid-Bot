@@ -49,6 +49,7 @@ module.exports = async (msg, args, command) => {
                     **'+ server.prefix + 'leave**\tQuitte le channel vocal.\n\
                     **'+ server.prefix + 'queue**\tPermet de visualiser les titres ajoutés dans la queue.\n\
                     **'+ server.prefix + 'clearqueue**\tPermet de vider la queue.\n\
+                    **'+ server.prefix + 'gif**\tEnvoie un gif correspondant à la demande (faite en anglais).\n\
                     **'+ server.prefix + '8ball**\tRépond à votre question.\n\
                     **'+ server.prefix + 'ping**\tSi channel nsfw, répond \'pong\'.'
                 }
