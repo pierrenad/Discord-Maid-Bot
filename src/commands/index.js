@@ -23,6 +23,7 @@ const removeAdminRole = require('./admin');
 const getChannelsConfig = require('./admin');
 const getRolesConfig = require('./admin');
 const nukeChannel = require('./admin');
+const gif = require('./gifs');
 
 const commands = {
     help,
@@ -47,7 +48,8 @@ const commands = {
     removeAdminRole,
     getChannelsConfig,
     getRolesConfig,
-    nukeChannel
+    nukeChannel,
+    gif
 }
 
 module.exports = async (msg) => {
