@@ -61,8 +61,8 @@ const commands = {
 }
 
 module.exports = async (msg) => {
-    var server = servers[msg.guild.id];
     if (msg.author.bot) return;
+    var server = servers[msg.guild.id];
     const args = msg.content.split(' '); // split with spaces 
     if (args.length == 0 || args[0].charAt(0) !== server.prefix) return;
     // if (args.length == 0 || args[0].charAt(0) !== server.prefix && args[0].charAt(0) !== '/') return; // for the tests
