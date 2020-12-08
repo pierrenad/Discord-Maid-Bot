@@ -9,7 +9,7 @@ const pool = new Pool({
 });
 
 module.exports = async (msg, args, command) => {
-    if (!args.length && command !== 'nukeChannel' && command !== 'getChannelsConfig' && command !== 'getRolesConfig') return;
+    // if (!args.length && command !== 'nukeChannel' && command !== 'getChannelsConfig' && command !== 'getRolesConfig') return;
     if (!msg.member.hasPermission('ADMINISTRATOR')) {
         const embed = new Discord.MessageEmbed()
             .setTitle('Admin')
@@ -22,6 +22,7 @@ module.exports = async (msg, args, command) => {
 
     switch (command) {
         case 'setChannelReglement': // arrival if we want to manage roles
+            if (!args.length) return;
             const cliRule = await pool.connect();
             var GetDbChannels = await cliRule.query(`SELECT channels FROM servers WHERE id=${msg.guild.id};`);
             dbChannels = GetDbChannels.rows[0].channels;
@@ -37,6 +38,7 @@ module.exports = async (msg, args, command) => {
             msg.react('👌');
             break;
         case 'setChannelAssistant': // notifications when something happens
+            if (!args.length) return;
             const cliAssist = await pool.connect();
             var GetDbChannels = await cliAssist.query(`SELECT channels FROM servers WHERE id=${msg.guild.id};`);
             dbChannels = GetDbChannels.rows[0].channels;
@@ -52,6 +54,7 @@ module.exports = async (msg, args, command) => {
             msg.react('👌');
             break;
         case 'setChannelAi': // channel for musique / other stuff with bot
+            if (!args.length) return;
             const cliAi = await pool.connect();
             var GetDbChannels = await cliAi.query(`SELECT channels FROM servers WHERE id=${msg.guild.id};`);
             dbChannels = GetDbChannels.rows[0].channels;
@@ -77,7 +80,31 @@ module.exports = async (msg, args, command) => {
             if (embed)
                 await msg.channel.send(embed);
             break;
+        case 'deleteChannelConfig': // delete the channel config from the given channel
+            if (!args.length) return;
+            const cliDelChannel = await pool.connect();
+            var GetDbChannels = await cliDelChannel.query(`SELECT channels FROM servers WHERE id=${msg.guild.id};`);
+            dbChannels = GetDbChannels.rows[0].channels;
+            var channelId = msg.mentions.channels.first().id;
+            if (dbChannels.items.some(item => item.id === channelId)) {
+                var index = dbChannels.items.findIndex(item => item.id === channelId);
+                dbChannels.items.splice(index, 1);
+            }
+            await cliDelChannel.query(`UPDATE servers SET channels='${JSON.stringify(dbChannels)}' WHERE id=${msg.guild.id};`);
+            servers[msg.guild.id].channels = dbChannels;
+            cliDelChannel.release();
+            msg.react('👌');
+            break;
+        case 'deleteChannelsConfig': // delete the channels config
+            const cliDelChannels = await pool.connect();
+            var dbChannels = { items: [] };
+            await cliDelChannels.query(`UPDATE servers SET channels='${JSON.stringify(dbChannels)}' WHERE id=${msg.guild.id};`);
+            servers[msg.guild.id].channels = dbChannels;
+            cliDelChannels.release();
+            msg.react('👌');
+            break;
         case 'setNewMemberRole': // arrival if we want to manage roles
+            if (!args.length) return;
             const cliNewM = await pool.connect();
             var GetDbRoles = await cliNewM.query(`SELECT roles FROM servers WHERE id=${msg.guild.id};`);
             dbRoles = GetDbRoles.rows[0].roles;
@@ -93,6 +120,7 @@ module.exports = async (msg, args, command) => {
             msg.react('👌');
             break;
         case 'setAcceptedRole': // role after member accept rules
+            if (!args.length) return;
             const cliAcceptM = await pool.connect();
             var GetDbRoles = await cliAcceptM.query(`SELECT roles FROM servers WHERE id=${msg.guild.id};`);
             dbRoles = GetDbRoles.rows[0].roles;
@@ -107,19 +135,6 @@ module.exports = async (msg, args, command) => {
             cliAcceptM.release();
             msg.react('👌');
             break;
-        // case 'addAdminRole': // add a role as admin for the bot
-        //     var roleId = msg.mentions.roles.first().id;
-        //     if (!server.roles.admin.includes(roleId)) {
-        //         server.roles.admin.push(roleId);
-        //     }
-        //     break;
-        // case 'removeAdminRole': // remove an admin role (admin for the bot)
-        //     var roleId = msg.mentions.roles.first().id;
-        //     if (server.roles.admin.includes(roleId)) {
-        //         var index = server.roles.admin.indexOf(roleId);
-        //         server.roles.admin.splice(index, 1);
-        //     }
-        //     break;
         case 'getRolesConfig': // arrival if we want to manage roles
             const embedRole = new Discord.MessageEmbed()
                 .setTitle('Liste des roles configurés')
@@ -130,6 +145,29 @@ module.exports = async (msg, args, command) => {
             });
             if (embedRole)
                 await msg.channel.send(embedRole);
+            break;
+        case 'deleteRoleConfig': // delete the role config from the given channel
+            if (!args.length) return;
+            const cliDelRole = await pool.connect();
+            var GetDbRoles = await cliDelRole.query(`SELECT roles FROM servers WHERE id=${msg.guild.id};`);
+            dbRoles = GetDbRoles.rows[0].roles;
+            var roleId = msg.mentions.roles.first().id;
+            if (dbRoles.items.some(item => item.id === roleId)) {
+                var index = dbRoles.items.findIndex(item => item.id === roleId);
+                dbRoles.items.splice(index, 1);
+            }
+            await cliDelRole.query(`UPDATE servers SET roles='${JSON.stringify(dbRoles)}' WHERE id=${msg.guild.id};`);
+            servers[msg.guild.id].roles = dbRoles;
+            cliDelRole.release();
+            msg.react('👌');
+            break;
+        case 'deleteRolesConfig': // delete the roles config
+            const cliDelRoles = await pool.connect();
+            var dbRoles = { items: [] };
+            await cliDelRoles.query(`UPDATE servers SET roles='${JSON.stringify(dbRoles)}' WHERE id=${msg.guild.id};`);
+            servers[msg.guild.id].roles = dbRoles;
+            cliDelRoles.release();
+            msg.react('👌');
             break;
         case 'nukeChannel': // remove an admin role (admin for the bot)
             if (args.length) {

@@ -24,10 +24,14 @@ module.exports = async (msg, args, command) => {
                     **'+ server.prefix + 'setChannelReglement**\tModifier le channel d\'arrivée des membres afin qu\'ils acceptents les règles.\n\
                     **'+ server.prefix + 'setChannelAssistant**\tChannel où le bot envoie des notifications (ex: nouveaux membres, etc).\n\
                     **'+ server.prefix + 'setChannelAi**\tChannel où faire des appels au bot (ex: musique, etc).\n\
+                    **'+ server.prefix + 'getChannelsConfig**\tAffiche les channels configurés.\n\
+                    **'+ server.prefix + 'deleteChannelConfig**\tSupprime la configuration des channels.\n\
+                    **'+ server.prefix + 'deleteChannelsConfig**\tSupprime la configuration du channel donné.\n\
                     **'+ server.prefix + 'setNewMemberRole**\tRôle des nouveaux arrivants.\n\
                     **'+ server.prefix + 'setAcceptedRole**\tRôle des membres qui ont acceptés le règlement.\n\
-                    **'+ server.prefix + 'addAdminRole**\tAjouter un rôle comme étant admin pour la gestion du bot.\n\
-                    **'+ server.prefix + 'removeAdminRole**\tRetirer un rôle vu comme admin pour la gestion du bot.\n\
+                    **'+ server.prefix + 'getRolesConfig**\tAffiche les rôles configurés.\n\
+                    **'+ server.prefix + 'deleteRolesConfig**\tSupprime la configuration des rôles.\n\
+                    **'+ server.prefix + 'deleteRoleConfig**\tSupprime la configuration du rôle donné.\n\
                     **'+ server.prefix + 'nukeChannel**\tVider un channel. \
                                         Possibilité de passer le nom d\'un channel pour faire la commande à partir d\'un autre endroit.\n\
                     **'+ server.prefix + 'test**\tTest the bot response.'

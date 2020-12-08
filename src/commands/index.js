@@ -22,6 +22,10 @@ const addAdminRole = require('./admin');
 const removeAdminRole = require('./admin');
 const getChannelsConfig = require('./admin');
 const getRolesConfig = require('./admin');
+const deleteChannelsConfig = require('./admin');
+const deleteChannelConfig = require('./admin');
+const deleteRolesConfig = require('./admin');
+const deleteRoleConfig = require('./admin');
 const nukeChannel = require('./admin');
 const gif = require('./gifs');
 
@@ -48,6 +52,10 @@ const commands = {
     removeAdminRole,
     getChannelsConfig,
     getRolesConfig,
+    deleteChannelsConfig,
+    deleteChannelConfig,
+    deleteRolesConfig,
+    deleteRoleConfig,
     nukeChannel,
     gif
 }
