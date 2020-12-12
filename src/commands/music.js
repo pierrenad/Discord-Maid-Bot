@@ -4,6 +4,7 @@ const Discord = require('discord.js');
 const servers = require('../bot').servers;
 const getUrlTitle = require("get-url-title");
 
+var lastSentMusicAdded = null;
 var nowPlaying = '';
 var lastSent = null;
 var paused = false;
@@ -112,7 +113,13 @@ module.exports = async (msg, args, command) => {
                         .setColor("#73ffdc")
                         .setDescription(urlTitle)
                         .setTitle("Added to the queue");
-                    msg.channel.send(embed);
+                    msg.channel.send(embed).then(sent => {
+                        if (lastSentMusicAdded) {
+                            if (msg.channel.messages.cache.find(message => message.id === lastSentMusicAdded.id))
+                                msg.channel.messages.cache.find(message => message.id === lastSentMusicAdded.id).delete();
+                        }
+                        lastSentMusicAdded = sent;
+                    });
 
                     if (msg.member.voice.channel.members.has(process.env.BOT_ID)) {
                         return;
@@ -216,7 +223,14 @@ module.exports = async (msg, args, command) => {
                         .setColor("#73ffdc")
                         .setDescription(theResult.title)
                         .setTitle("Added to the queue");
-                    msg.channel.send(embed);
+                    msg.channel.send(embed).then(sent => {
+                        console.log(lastSentMusicAdded);
+                        if (lastSentMusicAdded) {
+                            if (msg.channel.messages.cache.find(message => message.id === lastSentMusicAdded.id))
+                                msg.channel.messages.cache.find(message => message.id === lastSentMusicAdded.id).delete();
+                        }
+                        lastSentMusicAdded = sent;
+                    });
 
                     if (msg.member.voice.channel.members.has(process.env.BOT_ID)) {
                         return;
