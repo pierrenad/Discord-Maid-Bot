@@ -4,7 +4,7 @@ const servers = require('../bot').servers;
 module.exports = async (msg, args, command) => {
     var server = servers[msg.guild.id];
     // if admin then can't be in a normal channel ?
-    if (command === 'helpAdmin') {
+    if (command === 'helpadmin') {
         if (!msg.member.hasPermission('ADMINISTRATOR')) {
             const embed = new Discord.MessageEmbed()
                 .setTitle('Admin')
@@ -34,6 +34,7 @@ module.exports = async (msg, args, command) => {
                     **'+ server.prefix + 'resume**\tReprend la musique.\n\
                     **'+ server.prefix + 'leave**\tQuitte le channel vocal.\n\
                     **'+ server.prefix + 'queue**\tPermet de visualiser les titres ajoutés dans la queue.\n\
+                    **'+ server.prefix + 'delQueueSong**\tPermet de supprimer la musique, donnée par son numéro, de la queue.\n\
                     **'+ server.prefix + 'clearqueue**\tPermet de vider la queue.\n\
                     **'+ server.prefix + 'gif**\tEnvoie un gif correspondant à la demande (faite en anglais).\n\
                     **'+ server.prefix + '8ball**\tRépond à votre question.\n\

@@ -12,7 +12,8 @@ const pause = require('./music');
 const resume = require('./music');
 const skip = require('./music');
 const queue = require('./music');
-const clearqueue = require('./music');
+const delQueueSong = require('./music');
+const clearQueue = require('./music');
 const setChannelReglement = require('./admin');
 const setChannelAssistant = require('./admin');
 const setChannelAi = require('./admin');
@@ -31,7 +32,7 @@ const gif = require('./gifs');
 
 const commands = {
     help,
-    helpAdmin,
+    helpadmin: helpAdmin,
     prefix,
     ping,
     '8ball': eightBall,
@@ -42,21 +43,22 @@ const commands = {
     leave,
     skip,
     queue,
-    clearqueue,
-    setChannelReglement,
-    setChannelAssistant,
-    setChannelAi,
-    setNewMemberRole,
-    setAcceptedRole,
-    addAdminRole,
-    removeAdminRole,
-    getChannelsConfig,
-    getRolesConfig,
-    deleteChannelsConfig,
-    deleteChannelConfig,
-    deleteRolesConfig,
-    deleteRoleConfig,
-    nukeChannel,
+    delqueuesong: delQueueSong,
+    clearqueue: clearQueue,
+    setchannelreglement: setChannelReglement,
+    setchannelassistant: setChannelAssistant,
+    setchannelai: setChannelAi,
+    setnewmemberrole: setNewMemberRole,
+    setacceptedrole: setAcceptedRole,
+    addadminrole: addAdminRole,
+    removeadminrole: removeAdminRole,
+    getchannelsconfig: getChannelsConfig,
+    getrolesconfig: getRolesConfig,
+    deletechannelsconfig: deleteChannelsConfig,
+    deletechannelconfig: deleteChannelConfig,
+    deleterolesconfig: deleteRolesConfig,
+    deleteroleconfig: deleteRoleConfig,
+    nukechannel: nukeChannel,
     gif
 }
 
@@ -66,7 +68,7 @@ module.exports = async (msg) => {
     const args = msg.content.split(' '); // split with spaces 
     if (args.length == 0 || args[0].charAt(0) !== server.prefix) return;
     // if (args.length == 0 || args[0].charAt(0) !== server.prefix && args[0].charAt(0) !== '/') return; // for the tests
-    const command = args.shift().substr(1); // remove first argument from the array and remove '!'
+    const command = args.shift().substr(1).toLowerCase(); // remove first argument from the array (remove prefix)
     if (Object.keys(commands).includes(command)) {
         commands[command](msg, args, command);
     }

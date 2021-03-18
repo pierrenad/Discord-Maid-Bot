@@ -204,7 +204,7 @@ module.exports = async (msg, args, command) => {
                                     sent.delete();
                                     break;
                                 default:
-                                    console.log('Autre emoji non pris en compte');
+                                    //console.log('Autre emoji non pris en compte');
                             }
                         }));
 
@@ -224,7 +224,7 @@ module.exports = async (msg, args, command) => {
                         .setDescription(theResult.title)
                         .setTitle("Added to the queue");
                     msg.channel.send(embed).then(sent => {
-                        console.log(lastSentMusicAdded);
+                        //console.log(lastSentMusicAdded);
                         if (lastSentMusicAdded) {
                             if (msg.channel.messages.cache.find(message => message.id === lastSentMusicAdded.id))
                                 msg.channel.messages.cache.find(message => message.id === lastSentMusicAdded.id).delete();
@@ -276,8 +276,10 @@ module.exports = async (msg, args, command) => {
                 resp.push('No song in the queue');
             }
             else {
+                var nbr = 0;
                 for (i in server.queue) {
-                    resp += `${server.queue[i].title}\n`;
+                    nbr++;
+                    resp += `[${nbr}] ${server.queue[i].title}\n`;
                 }
             }
             let embed = new Discord.MessageEmbed()
@@ -287,6 +289,35 @@ module.exports = async (msg, args, command) => {
             // .setDescription(resp)
             // .setTitle("Music queue");
             msg.channel.send(embed);
+            break;
+        case 'delqueuesong':
+            // var server = servers[msg.guild.id];
+            if (!args.length) return;
+
+            var resp = [];
+            if (server.queue.length === 0) {
+                resp.push('La queue est déjà vide');
+            }
+            else {
+                var songNbr = args[0];
+                if (isNaN(songNbr)) {
+                    resp.push('Entrez un numéro correspondant à une musique dans la queue');
+                }
+                else {
+                    if (songNbr <= server.queue.length) {
+                        server.queue.splice(songNbr - 1, 1);
+                        resp.push('La musique a été retirée');
+                    }
+                    else {
+                        resp.push('Mauvais numéro, choisissez dans la queue un numéro existant');
+                    }
+                }
+            }
+            let embedDelQSong = new Discord.MessageEmbed()
+                .setColor("#73ffdc")
+                .setDescription(resp)
+                .setTitle("Music queue");
+            msg.channel.send(embedDelQSong);
             break;
         case 'clearqueue':
             // var server = servers[msg.guild.id];
