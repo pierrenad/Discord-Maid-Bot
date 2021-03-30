@@ -17,6 +17,7 @@ const prefix = ['$'];
 // exports.prefix = prefix;
 const servers = {};
 exports.servers = servers;
+exports.startTime = new Date(); 
 
 const commandHandler = require('./commands');
 

@@ -28,6 +28,7 @@ const deleteChannelConfig = require('./admin');
 const deleteRolesConfig = require('./admin');
 const deleteRoleConfig = require('./admin');
 const nukeChannel = require('./admin');
+const timeLeft = require('./timeLeft');
 const gif = require('./gifs');
 
 const commands = {
@@ -59,6 +60,7 @@ const commands = {
     deleterolesconfig: deleteRolesConfig,
     deleteroleconfig: deleteRoleConfig,
     nukechannel: nukeChannel,
+    timeleft: timeLeft,
     gif
 }
 

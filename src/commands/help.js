@@ -38,6 +38,7 @@ module.exports = async (msg, args, command) => {
                     **'+ server.prefix + 'clearqueue**\tPermet de vider la queue.\n\
                     **'+ server.prefix + 'gif**\tEnvoie un gif correspondant à la demande (faite en anglais).\n\
                     **'+ server.prefix + '8ball**\tRépond à votre question.\n\
+                    **'+ server.prefix + 'timeLeft**\tTemps restant avant que le bot ne sois down.\n\
                     **'+ server.prefix + 'ping**\tSi channel nsfw, répond \'pong\'.'
                 }
             );
