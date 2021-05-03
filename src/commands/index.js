@@ -60,7 +60,7 @@ const commands = {
     deleterolesconfig: deleteRolesConfig,
     deleteroleconfig: deleteRoleConfig,
     nukechannel: nukeChannel,
-    timeleft: timeLeft,
+    //timeleft: timeLeft,
     gif
 }
 
