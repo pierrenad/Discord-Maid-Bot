@@ -30,6 +30,8 @@ const deleteRoleConfig = require('./admin');
 const nukeChannel = require('./admin');
 const timeLeft = require('./timeLeft');
 const gif = require('./gifs');
+const random = require('./randomCommands');
+const flip = require('./randomCommands');
 
 const commands = {
     help,
@@ -61,6 +63,8 @@ const commands = {
     deleteroleconfig: deleteRoleConfig,
     nukechannel: nukeChannel,
     //timeleft: timeLeft,
+    random,
+    flip,
     gif
 }
 
